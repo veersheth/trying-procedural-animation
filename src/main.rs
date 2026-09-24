@@ -1,12 +1,12 @@
 
 
-fn petri_print(petri: &Vec<Vec<bool>>) {
+fn petri_print(petri: &[Vec<bool>]) {
     for row in petri {
         for cell in row {
-            if *cell == false {
-                print!(" ");
-            } else {
+            if *cell  {
                 print!("•");
+            } else {
+                print!(" ");
             }
         }
         println!("");
