@@ -12,9 +12,9 @@ fn petri_print(petri: &[Vec<bool>]) {
     for row in petri {
         for cell in row {
             if *cell {
-                print!("■");
+                print!("*");
             } else {
-                print!(".");
+                print!(" ");
             }
         }
         println!();
