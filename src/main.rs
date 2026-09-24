@@ -1,8 +1,17 @@
 
 
-
-
-
+fn petri_print(petri: &Vec<Vec<bool>>) {
+    for row in petri {
+        for cell in row {
+            if *cell == false {
+                print!(" ");
+            } else {
+                print!("•");
+            }
+        }
+        println!("");
+    }
+}
 
 fn main() {
     let cols = 20;
@@ -10,23 +19,15 @@ fn main() {
 
     let mut petri: Vec<Vec<bool>> = Vec::new();
 
-    for _ in 1..cols {
+    for _ in 0..cols {
         let mut this_row: Vec<bool> = Vec::new();
-        for _ in 1..rows {
+        for _ in 0..rows {
             this_row.push(false);
         }
         petri.push(this_row);
     }
-            
 
-    for row in petri {
-        for i in row {
-            if i == false {
-                print!("•");
-            }
-        }
-        println!("");
-    }
+    petri_print(&petri);
 }
 
 
