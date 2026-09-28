@@ -1,7 +1,4 @@
-const COLS: usize = 160;
-const ROWS: usize = 40;
-const MID_X: usize = COLS / 2;
-const MID_Y: usize = ROWS / 2;
+use term_size;
 
 fn clear_screen() {
     print!("\x1B[2J\x1B[1;1H");
@@ -21,7 +18,7 @@ fn petri_print(petri: &[Vec<bool>]) {
     }
 }
 
-fn count_neighbours(petri: &[Vec<bool>], row: usize, col: usize) -> i32 {
+fn count_neighbours(petri: &[Vec<bool>], row: usize, col: usize, rows: usize, cols: usize) -> i32 {
     let mut count = 0;
 
     for row_offset in -1..=1 {
@@ -33,7 +30,7 @@ fn count_neighbours(petri: &[Vec<bool>], row: usize, col: usize) -> i32 {
             let neighbour_row = row as i32 + row_offset;
             let neighbour_col = col as i32 + col_offset;
 
-            if neighbour_row < 0 || neighbour_row >= ROWS as i32 || neighbour_col < 0 || neighbour_col >= COLS as i32 {
+            if neighbour_row < 0 || neighbour_row >= rows as i32 || neighbour_col < 0 || neighbour_col >= cols as i32 {
                 continue;
             }
 
@@ -46,10 +43,10 @@ fn count_neighbours(petri: &[Vec<bool>], row: usize, col: usize) -> i32 {
     count
 }
 
-fn petri_simulate(old_petri: &[Vec<bool>], petri: &mut Vec<Vec<bool>>) {
-    for row in 0..ROWS {
-        for col in 0..COLS {
-            let neighbours = count_neighbours(old_petri, row, col);
+fn petri_simulate(old_petri: &[Vec<bool>], petri: &mut Vec<Vec<bool>>, rows: usize, cols: usize) {
+    for row in 0..rows {
+        for col in 0..cols {
+            let neighbours = count_neighbours(old_petri, row, col, rows, cols);
 
             if old_petri[row][col] {
                 petri[row][col] = neighbours == 2 || neighbours == 3;
@@ -61,26 +58,26 @@ fn petri_simulate(old_petri: &[Vec<bool>], petri: &mut Vec<Vec<bool>>) {
 }
 
 fn main() {
-    let mut petri: Vec<Vec<bool>> = Vec::new();
+    let (cols, rows) = term_size::dimensions().unwrap_or((80, 24));
+    let mid_x = cols / 2;
+    let mid_y = rows / 2;
+    let mut generation_counter: i32 = 0;
+    let mut petri = vec![vec![false; cols]; rows];
 
-    for _ in 0..ROWS {
-        let mut this_row: Vec<bool> = Vec::new();
-        for _ in 0..COLS {
-            this_row.push(false);
-        }
-        petri.push(this_row);
+    if mid_y > 0 && mid_x > 0 && mid_y + 1 < rows && mid_x + 1 < cols {
+        petri[mid_y - 1][mid_x] = true;
+        petri[mid_y - 1][mid_x + 1] = true;
+        petri[mid_y][mid_x - 1] = true;
+        petri[mid_y][mid_x] = true;
+        petri[mid_y + 1][mid_x] = true;
     }
-
-    petri[MID_Y - 1][MID_X] = true;
-    petri[MID_Y - 1][MID_X + 1] = true;
-    petri[MID_Y][MID_X - 1] = true;
-    petri[MID_Y][MID_X] = true;
-    petri[MID_Y + 1][MID_X] = true;
 
     loop {
         let old_petri = petri.clone();
-        petri_simulate(&old_petri, &mut petri);
+        petri_simulate(&old_petri, &mut petri, rows, cols);
         petri_print(&petri);
-        std::thread::sleep(std::time::Duration::from_millis(40));
+        println!("Generation: {}", generation_counter);
+        generation_counter += 1;
+        std::thread::sleep(std::time::Duration::from_millis(50));
     }
 }
